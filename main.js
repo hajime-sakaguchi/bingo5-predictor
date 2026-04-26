@@ -434,7 +434,7 @@ function initializeBingo5System() {
         
         try {
             const today = new Date();
-            const dateStr = \`\${today.getFullYear()}/\${(today.getMonth()+1).toString().padStart(2, '0')}/\${today.getDate().toString().padStart(2, '0')} \${today.getHours().toString().padStart(2, '0')}:\${today.getMinutes().toString().padStart(2, '0')}\`;
+            const dateStr = `${today.getFullYear()}/${(today.getMonth()+1).toString().padStart(2, '0')}/${today.getDate().toString().padStart(2, '0')} ${today.getHours().toString().padStart(2, '0')}:${today.getMinutes().toString().padStart(2, '0')}`;
             
             for (const row of AppState.generatedSets) {
                 const rowData = [dateStr, "予測生成", ...row]; // 日時, 回号(モック), 枠1〜8
