@@ -142,6 +142,37 @@ function initializeBingo5System() {
             globalStatsContent.innerHTML = `<div class='text-green-400 mb-1'>Global data loaded (${AppState.globalDraws.length} draws).</div><div class="text-accentGlow">Hot:</div>${hotNumbers.join(', ')}<br><br><div class="text-blue-400">Cold:</div>${coldNumbers.join(', ')}`;
             personalStatsContent.innerHTML = `<div class='text-green-400 mb-1'>Personal history loaded (${AppState.personalHistory.length} sets).</div><div>Trend Match Rate: ${hitRate}%</div><br><div class="text-accentGlow">Strong Bias:</div>${myHabit.length > 0 ? myHabit.join(', ') : 'No data yet.'}`;
             
+            // --- 次回予測回号と抽せん日の自動入力 ---
+            if (AppState.globalDraws.length > 0) {
+                let maxDraw = 0;
+                let latestDateStr = null;
+                AppState.globalDraws.forEach(row => {
+                    const drawNum = parseInt(row[0], 10);
+                    if (!isNaN(drawNum) && drawNum > maxDraw) {
+                        maxDraw = drawNum;
+                        latestDateStr = row[1];
+                    }
+                });
+                
+                if (maxDraw > 0) {
+                    const targetDrawInput = document.getElementById('targetDrawNum');
+                    if (targetDrawInput && !targetDrawInput.value) {
+                        targetDrawInput.value = maxDraw + 1;
+                    }
+                    
+                    const targetDateInput = document.getElementById('targetDrawDate');
+                    if (latestDateStr && targetDateInput && !targetDateInput.value) {
+                        const latestDate = new Date(latestDateStr);
+                        if (!isNaN(latestDate.getTime())) {
+                            // ビンゴ5は毎週水曜日（通常7日後）
+                            const nextDate = new Date(latestDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+                            const nextDateStr = `${nextDate.getFullYear()}-${(nextDate.getMonth()+1).toString().padStart(2, '0')}-${nextDate.getDate().toString().padStart(2, '0')}`;
+                            targetDateInput.value = nextDateStr;
+                        }
+                    }
+                }
+            }
+            
         } catch (error) {
             fetchStatus.className = "text-xs text-red-400 mt-2 h-4 text-center font-mono break-words";
             fetchStatus.textContent = "Error: " + error.message;
@@ -433,11 +464,20 @@ function initializeBingo5System() {
         btnSaveHistory.innerHTML = `<svg class="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Saving...`;
         
         try {
-            const today = new Date();
-            const dateStr = `${today.getFullYear()}/${(today.getMonth()+1).toString().padStart(2, '0')}/${today.getDate().toString().padStart(2, '0')} ${today.getHours().toString().padStart(2, '0')}:${today.getMinutes().toString().padStart(2, '0')}`;
+            const targetDraw = document.getElementById('targetDrawNum').value;
+            const targetDateRaw = document.getElementById('targetDrawDate').value;
+            
+            if (!targetDraw || !targetDateRaw) {
+                resultContainer.innerHTML = `<div class="text-yellow-400 text-sm p-4 bg-yellow-900/20 rounded-xl border border-yellow-500/30">Algorithm Settings で「購入回号(Target Draw)」と「抽せん日(Draw Date)」を指定してください。</div>`;
+                btnSaveHistory.disabled = false;
+                btnSaveHistory.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg> Save as History`;
+                return;
+            }
+            
+            const targetDate = targetDateRaw.replace(/-/g, '/');
             
             for (const row of AppState.generatedSets) {
-                const rowData = [dateStr, "予測生成", ...row]; // 日時, 回号(モック), 枠1〜8
+                const rowData = [parseInt(targetDraw, 10), targetDate, ...row]; // 回号, 抽せん日, 枠1〜8
                 const payload = { action: 'saveHistory', row: rowData };
                 
                 await fetch(GAS_URL, {
