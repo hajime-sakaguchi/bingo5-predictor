@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bingo 5 - Smart Predictor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1a2a4f',
+            secondary: '#223e76',
+            accent: '#4A7C59',
+            accentGlow: '#65a678',
+          },
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #0d162a 0%, #1a2a4f 100%);
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    }
+    .input-glass {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+    .input-glass:focus {
+      outline: none;
+      border-color: #4A7C59;
+      box-shadow: 0 0 0 2px rgba(74, 124, 89, 0.3);
+    }
+    .btn-accent {
+      background: linear-gradient(135deg, #4A7C59 0%, #3a6246 100%);
+      transition: all 0.3s ease;
+    }
+    .btn-accent:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(74, 124, 89, 0.4);
+      background: linear-gradient(135deg, #5c966e 0%, #4A7C59 100%);
+    }
+    .number-ball {
+      background: linear-gradient(135deg, #223e76 0%, #1a2a4f 100%);
+      border: 2px solid #4A7C59;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 0 10px rgba(74, 124, 89, 0.2);
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+      transition: all 0.3s ease;
+    }
+    .number-ball:hover {
+      transform: scale(1.1) rotate(5deg);
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.3), 0 0 15px rgba(74, 124, 89, 0.6);
+      border-color: #65a678;
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+  </style>
+</head>
+<body class="py-8 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-6xl mx-auto space-y-8">
+    
+    <!-- Header -->
+    <header class="text-center space-y-2 mb-12">
+      <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 drop-shadow-sm">
+        BINGO 5
+      </h1>
+      <p class="text-accentGlow font-semibold tracking-widest uppercase text-sm">Smart Predictor & Analytics</p>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- Left Column: Controls & Inputs -->
+      <div class="lg:col-span-5 space-y-6">
+        
+        <!-- Data Sync & OCR Card -->
+        <section class="glass-card rounded-2xl p-6 relative overflow-hidden group">
+          <div class="absolute inset-0 bg-gradient-to-r from-secondary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <h2 class="text-xl font-semibold mb-5 flex items-center gap-2">
+            <svg class="w-5 h-5 text-accentGlow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
+            Data Management
+          </h2>
+          
+          <div class="space-y-5 relative z-10">
+            <div>
+              <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">1. Sync with GAS</label>
+              <button id="btnFetchData" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white py-3 px-4 rounded-xl transition-all text-sm font-medium flex items-center justify-center gap-2 shadow-inner">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                Fetch Latest Data
+              </button>
+              <div id="fetchStatus" class="text-xs text-green-400 mt-2 h-4 text-center font-mono"></div>
+            </div>
+            
+            <div class="h-px w-full bg-white/10"></div>
+            
+            <div>
+              <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">2. Manual Results Entry (手動登録)</label>
+              <div class="bg-white/5 border border-white/10 rounded-xl p-4 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-[10px] text-gray-500 uppercase mb-1">Draw Number (第〇〇回)</label>
+                    <input type="number" id="manualDrawNum" placeholder="467" class="w-full input-glass rounded-lg py-2 px-3 text-sm focus:ring-2 focus:ring-accentGlow/50">
+                  </div>
+                  <div>
+                    <label class="block text-[10px] text-gray-500 uppercase mb-1">Draw Date (抽せん日)</label>
+                    <input type="date" id="manualDrawDate" class="w-full input-glass rounded-lg py-2 px-3 text-sm focus:ring-2 focus:ring-accentGlow/50">
+                  </div>
+                </div>
+                
+                <div>
+                  <label class="block text-[10px] text-gray-500 uppercase mb-2">Winning Numbers (当せん数字)</label>
+                  <div class="grid grid-cols-4 gap-2" id="manualSlotsContainer">
+                    <!-- JS will inject 8 select boxes here -->
+                  </div>
+                </div>
+
+                <button id="btnSaveManual" class="w-full bg-accent/20 hover:bg-accent/40 border border-accent/50 text-accentGlow py-2 rounded-lg transition-all text-xs font-bold tracking-widest mt-2">
+                  SAVE TO HISTORY
+                </button>
+                <div id="manualStatus" class="text-xs text-center font-mono h-4"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Generation Settings Card -->
+        <section class="glass-card rounded-2xl p-6">
+          <h2 class="text-xl font-semibold mb-5 flex items-center gap-2">
+            <svg class="w-5 h-5 text-accentGlow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+            Algorithm Settings
+          </h2>
+          
+          <div class="space-y-5">
+
+            <div>
+              <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Smart Bias Correction</label>
+              <select id="biasOption" class="w-full input-glass rounded-xl py-3 px-4 text-sm appearance-none cursor-pointer focus:ring-2 focus:ring-accentGlow/50">
+                <option value="smart" class="bg-primary text-white">Smart Correction (Auto Hit Rate)</option>
+                <option value="ignore" class="bg-primary text-white">No Bias (Pure Probability)</option>
+                <option value="emphasize" class="bg-primary text-white">Force Emphasize Habit</option>
+                <option value="avoid" class="bg-primary text-white">Force Avoid Habit</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">Fixed Axis Numbers</label>
+              <div id="fixSlotsContainer" class="grid grid-cols-4 gap-2">
+                <!-- Injected via JS -->
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <button id="btnGenerate" class="w-full btn-accent text-white font-bold text-lg py-4 rounded-xl shadow-lg flex justify-center items-center gap-3 overflow-hidden relative group">
+          <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+          <svg class="w-6 h-6 animate-pulse relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          <span class="relative z-10">Generate Predictions</span>
+        </button>
+      </div>
+
+      <!-- Right Column: Results & Stats -->
+      <div class="lg:col-span-7 flex flex-col gap-6">
+        
+        <!-- Results Panel -->
+        <section class="glass-card rounded-2xl p-6 flex-1 flex flex-col relative overflow-hidden">
+          <div class="absolute -top-32 -right-32 w-64 h-64 bg-accent/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div class="absolute -bottom-32 -left-32 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div class="flex justify-between items-end mb-6 border-b border-white/10 pb-3 relative z-10">
+            <h2 class="text-xl font-semibold flex items-center gap-2">
+              <svg class="w-5 h-5 text-accentGlow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              Predictions (5 Sets)
+            </h2>
+            <button id="btnSaveHistory" class="text-xs bg-white/10 hover:bg-white/20 text-gray-200 py-2 px-4 rounded-lg transition hidden items-center gap-1.5 border border-white/10 shadow-sm">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+              Save as History
+            </button>
+          </div>
+          
+          <div id="resultContainer" class="flex-1 space-y-4 flex flex-col justify-center relative z-10 min-h-[300px]">
+            <div class="text-center text-gray-500 opacity-60">
+              <svg class="w-16 h-16 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+              <p>Awaiting generation parameters...</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Stats Panel -->
+        <section class="glass-card rounded-2xl p-6 relative z-10">
+          <h2 class="text-lg font-semibold mb-5 text-gray-200 flex items-center gap-2">
+            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+            Analytics Dashboard
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-black/30 rounded-xl p-5 border border-white/5 relative overflow-hidden group">
+              <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl transform translate-x-1/2 -translate-y-1/2 group-hover:bg-blue-500/20 transition-colors"></div>
+              <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Global Trends (Hot/Cold)</h3>
+              <div id="globalStatsContent" class="text-sm font-mono text-gray-300 h-40 overflow-y-auto pr-2 whitespace-pre-wrap">No data fetched.</div>
+            </div>
+            <div class="bg-black/30 rounded-xl p-5 border border-white/5 relative overflow-hidden group">
+               <div class="absolute top-0 right-0 w-24 h-24 bg-accent/10 rounded-full blur-2xl transform translate-x-1/2 -translate-y-1/2 group-hover:bg-accent/20 transition-colors"></div>
+              <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Personal Hit Rate Bias</h3>
+              <div id="personalStatsContent" class="text-sm font-mono text-gray-300 h-40 overflow-y-auto pr-2 whitespace-pre-wrap">No data fetched.</div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
