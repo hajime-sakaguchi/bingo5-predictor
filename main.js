@@ -85,12 +85,17 @@ function initializeBingo5System() {
 
             // --- 統計計算ロジック ---
             
-            // 1. Global Stats (Hot/Cold)
+            // 1. Global Stats (Hot/Cold & Position)
             const numberCounts = Array(41).fill(0);
+            AppState.globalStats.positionCounts = [0, 0, 0, 0, 0];
             AppState.globalDraws.forEach(row => {
                 for(let i=2; i<=9; i++) {
                     const num = parseInt(row[i], 10);
-                    if(num >= 1 && num <= 40) numberCounts[num]++;
+                    if(num >= 1 && num <= 40) {
+                        numberCounts[num]++;
+                        const posIndex = (num - 1) % 5;
+                        AppState.globalStats.positionCounts[posIndex]++;
+                    }
                 }
             });
             
@@ -107,6 +112,13 @@ function initializeBingo5System() {
             const sortedCounts = numberCounts.map((count, num) => ({num, count})).filter(x => x.num > 0).sort((a, b) => b.count - a.count);
             const hotNumbers = sortedCounts.slice(0, 5).map(x => `${x.num}(${x.count}回)`);
             const coldNumbers = sortedCounts.slice(-5).map(x => `${x.num}(${x.count}回)`);
+            
+            // Position Trends (全体)
+            const totalPositions = AppState.globalStats.positionCounts.reduce((sum, count) => sum + count, 0);
+            const positionTrends = AppState.globalStats.positionCounts
+                .map((count, idx) => ({ pos: idx + 1, count, pct: totalPositions > 0 ? Math.round((count / totalPositions) * 100) : 0 }))
+                .sort((a, b) => b.count - a.count);
+            const positionTrendText = positionTrends.map(x => `P${x.pos}(${x.pct}%)`).join(' > ');
 
             // 2. Personal Stats (購入癖)
             const myNumberCounts = Array(41).fill(0);
@@ -139,7 +151,7 @@ function initializeBingo5System() {
             fetchStatus.className = "text-xs text-green-400 mt-2 h-4 text-center font-mono";
             fetchStatus.textContent = `Data synced! (Draws:${AppState.globalDraws.length}, History:${AppState.personalHistory.length})`;
             
-            globalStatsContent.innerHTML = `<div class='text-green-400 mb-1'>Global data loaded (${AppState.globalDraws.length} draws).</div><div class="text-accentGlow">Hot:</div>${hotNumbers.join(', ')}<br><br><div class="text-blue-400">Cold:</div>${coldNumbers.join(', ')}`;
+            globalStatsContent.innerHTML = `<div class='text-green-400 mb-1'>Global data loaded (${AppState.globalDraws.length} draws).</div><div class="text-accentGlow">Hot:</div>${hotNumbers.join(', ')}<br><div class="text-blue-400 mt-1">Cold:</div>${coldNumbers.join(', ')}<br><div class="text-yellow-400 mt-1">Pos Trend:</div><span class="text-[10px] tracking-tighter">${positionTrendText}</span>`;
             personalStatsContent.innerHTML = `<div class='text-green-400 mb-1'>Personal history loaded (${AppState.personalHistory.length} sets).</div><div>Trend Match Rate: ${hitRate}%</div><br><div class="text-accentGlow">Strong Bias:</div>${myHabit.length > 0 ? myHabit.join(', ') : 'No data yet.'}`;
             
             // --- 次回予測回号と抽せん日の自動入力 ---
@@ -373,11 +385,22 @@ function initializeBingo5System() {
                         
                         const gCount = (AppState.globalStats && AppState.globalStats.slotCounts && AppState.globalStats.slotCounts[i]) ? (AppState.globalStats.slotCounts[i][n] || 0) : 0;
                         const pCount = (AppState.personalStats && AppState.personalStats.mySlotCounts && AppState.personalStats.mySlotCounts[i]) ? (AppState.personalStats.mySlotCounts[i][n] || 0) : 0;
+
+                        // ポジションボーナスの計算
+                        let posRatio = 1.0;
+                        if (AppState.globalStats && AppState.globalStats.positionCounts) {
+                            const posIndex = (n - 1) % 5;
+                            const posCount = AppState.globalStats.positionCounts[posIndex] || 0;
+                            const maxPosCount = Math.max(...AppState.globalStats.positionCounts, 1);
+                            posRatio = posCount / maxPosCount; // 0.0 ~ 1.0 (1.0 is the hottest position)
+                        }
                         
                         if (biasOption === 'smart') {
                             // Smart: 全体のトレンド(Hot)を少し優遇しつつ、自分の買い癖を避ける
                             w += (gCount * 0.3);
                             w = Math.max(0.1, w - (pCount * 1.5));
+                            // ポジションがHotなほど、最大+20%のボーナス倍率をかける
+                            w *= (0.8 + 0.4 * posRatio);
                         } else if (biasOption === 'emphasize') {
                             // Emphasize: 自分の買い癖を極端に強調する
                             w += (pCount * 3.0);
