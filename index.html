@@ -3823,7 +3823,7 @@ const NATURE_DATA = {
     "age": 0.8
   }
 };
-document.addEventListener('DOMContentLoaded', () => {
+function initializeBingo5System() {
     // DOM Elements
     const btnFetchData = document.getElementById('btnFetchData');
     const btnGenerate = document.getElementById('btnGenerate');
@@ -4372,7 +4372,14 @@ document.addEventListener('DOMContentLoaded', () => {
             btnSaveHistory.innerHTML = `Save as History`;
         }
     });
-});
+}
+
+// Ensure the code runs regardless of when it's loaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeBingo5System);
+} else {
+    initializeBingo5System();
+}
 
 
 </script>
