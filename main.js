@@ -280,18 +280,21 @@ function initializeBingo5System() {
                 row: rowData
             };
             
-            // fetch()でPOSTリクエスト送信
-            // GASのウェブアプリは no-cors を指定しないとCORSエラーになる場合があります
-            await fetch(GAS_URL, {
+            // Simple Requestとして扱いCORSのOPTIONS送信を回避するため text/plain を使用する
+            const response = await fetch(GAS_URL, {
                 method: 'POST',
-                mode: 'no-cors',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'text/plain;charset=utf-8'
                 },
                 body: JSON.stringify(payload)
             });
             
-            // no-corsの場合、レスポンスの詳細は読めないため、例外が出なければ成功とみなす
+            const result = await response.json();
+            if (result.status !== 'success') {
+                throw new Error(result.message || 'Unknown error from server');
+            }
+            
+            // 成功メッセージ
             manualStatus.className = "text-xs text-green-400 text-center font-mono h-4";
             manualStatus.textContent = "保存が完了しました！";
             
@@ -503,12 +506,15 @@ function initializeBingo5System() {
                 const rowData = [parseInt(targetDraw, 10), targetDate, ...row]; // 回号, 抽せん日, 枠1〜8
                 const payload = { action: 'saveHistory', row: rowData };
                 
-                await fetch(GAS_URL, {
+                const response = await fetch(GAS_URL, {
                     method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(payload)
                 });
+                const result = await response.json();
+                if (result.status !== 'success') {
+                    throw new Error(result.message || 'Unknown error from server');
+                }
             }
             
             btnSaveHistory.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Saved!`;
