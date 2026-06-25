@@ -18,7 +18,7 @@ function initializeBingo5System() {
     };
 
     // !!!!!!!!!! ここにGASのデプロイURLを入力してください !!!!!!!!!!
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbwQz65euuA-a6s5qKNUcMeqDC132VE0yZlrQMO34F1zS-D055-9fDHuyCAvCzOCOqM7DA/exec';
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbx6ZTwg3uX92ztL9GDwDEAn3NnwYC6kbKL4aw0lGmYlhUPyM_fxnAc1z7tnKN3TUIZD/exec';
 
     // Bingo5 Range config (枠1〜8)
     const BINGO_RANGES = [
