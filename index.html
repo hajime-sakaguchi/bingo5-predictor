@@ -150,6 +150,16 @@
           
           <div class="space-y-5">
 
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Target Draw (次回予測回号)</label>
+                <input type="number" id="targetDrawNum" class="w-full input-glass rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-accentGlow/50">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Draw Date (抽せん予定日)</label>
+                <input type="date" id="targetDrawDate" class="w-full input-glass rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-accentGlow/50">
+              </div>
+            </div>
             <div>
               <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Smart Bias Correction</label>
               <select id="biasOption" class="w-full input-glass rounded-xl py-3 px-4 text-sm appearance-none cursor-pointer focus:ring-2 focus:ring-accentGlow/50">
